@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Fake News Detector</title>
+<style>
+  body{font-family:system-ui;max-width:680px;margin:40px auto;padding:0 16px;background:#0f172a;color:#e2e8f0}
+  h1{color:#38bdf8}
+  textarea,input[type=file],button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#e2e8f0}
+  textarea{min-height:140px}
+  button{background:#38bdf8;color:#0f172a;font-weight:700;cursor:pointer;border:0}
+  #out{margin-top:16px;padding:14px;border-radius:8px;background:#1e293b;display:none}
+  .fake{color:#f87171}.real{color:#4ade80}
+  small{color:#94a3b8}
+</style>
+</head>
+<body>
+<h1>Fake News Detector</h1>
+<p><small>Paste article text or upload image (OCR). Returns FAKE/REAL with confidence.</small></p>
+<form id="f">
+  <textarea name="text" placeholder="Paste news text here..."></textarea>
+  <input type="file" name="image" accept="image/*">
+  <button type="submit">Detect</button>
+</form>
+<div id="out"></div>
+<script>
+const f=document.getElementById('f'),out=document.getElementById('out');
+f.onsubmit=async e=>{
+  e.preventDefault();
+  out.style.display='block';out.innerHTML='Analyzing...';
+  const r=await fetch('/predict',{method:'POST',body:new FormData(f)});
+  const d=await r.json();
+  if(d.error){out.innerHTML='Error: '+d.error;return;}
+  const cls=d.label==='FAKE'?'fake':'real';
+  out.innerHTML=`<h2 class="${cls}">${d.label}</h2><p>Confidence: ${(d.score*100).toFixed(2)}%</p><small>${d.text||''}</small>`;
+};
+</script>
+</body>
+</html>
